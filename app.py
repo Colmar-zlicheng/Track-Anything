@@ -285,6 +285,8 @@ def vos_tracking_video(video_state, interactive_state, mask_dropdown):
         template_mask = video_state["masks"][video_state["select_frame_number"]]
     fps = video_state["fps"]
 
+    video_state['num_masks'] = len(mask_dropdown)
+
     # operation error
     if len(np.unique(template_mask)) == 1:
         template_mask[0][0] = 1
@@ -319,16 +321,35 @@ def vos_tracking_video(video_state, interactive_state, mask_dropdown):
             interactive_state["positive_click_times"], interactive_state["negative_click_times"]))
 
     # print(video_state.keys()) (['user_name', 'video_name', 'origin_images', 'painted_images', 'masks', 'logits', 'select_frame_number', 'fps'])
-    print(video_state['select_frame_number'])
+    # print(video_state['select_frame_number'])
     #### mask save
     object_mask_path = interactive_state['save_path']
-    if interactive_state["mask_save"]:
+    if interactive_state["mask_save"] == 'whole':
         i = 0
         print("save mask")
         for mask in etqdm(video_state["masks"]):
             Image.fromarray(mask * 255).save(os.path.join(object_mask_path, '{:04d}.png'.format(i)))
             i += 1
         print("masks have been saved")
+    elif interactive_state["mask_save"] == 'all':
+        print("save mask")
+        masks = video_state["masks"]
+        os.mkdir(os.path.join(object_mask_path, 'mask_bkg'))
+        for j in range(video_state['num_masks']):
+            os.mkdir(os.path.join(object_mask_path, 'mask_{:02d}'.format(j + 1)))
+        i = 0
+        for mask in etqdm(video_state["masks"]):
+            for j in range(video_state['num_masks'] + 1):
+                if j == 0:
+                    obj_name = 'mask_bkg'
+                else:
+                    obj_name = 'mask_{:02d}'.format(j)
+                Image.fromarray((mask == j).astype('uint8') * 255).save(
+                    os.path.join(object_mask_path, obj_name, '{:04d}.png'.format(i)))
+            i += 1
+        print("masks have been saved")
+    else:
+        raise ValueError()
     #### shanggao code for mask save
     return video_output, video_state, interactive_state, operation_log
 

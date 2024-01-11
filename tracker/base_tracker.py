@@ -20,14 +20,15 @@ import progressbar
 
 
 class BaseTracker:
+
     def __init__(self, xmem_checkpoint, device, sam_model=None, model_type=None) -> None:
         """
         device: model device
         xmem_checkpoint: checkpoint of XMem model
         """
         # load configurations
-        with open("tracker/config/config.yaml", 'r') as stream: 
-            config = yaml.safe_load(stream) 
+        with open("tracker/config/config.yaml", 'r') as stream:
+            config = yaml.safe_load(stream)
         # initialise XMem
         network = XMem(config, xmem_checkpoint).to(device).eval()
         # initialise IncerenceCore
@@ -38,7 +39,7 @@ class BaseTracker:
             im_normalization,
         ])
         self.device = device
-        
+
         # changable properties
         self.mapper = MaskMapper()
         self.initialised = False
@@ -52,8 +53,7 @@ class BaseTracker:
         # mask transform is applied AFTER mapper, so we need to post-process it in eval.py
         h, w = mask.shape[-2:]
         min_hw = min(h, w)
-        return F.interpolate(mask, (int(h/min_hw*self.size), int(w/min_hw*self.size)), 
-                    mode='nearest')
+        return F.interpolate(mask, (int(h / min_hw * self.size), int(w / min_hw * self.size)), mode='nearest')
 
     @torch.no_grad()
     def track(self, frame, first_frame_annotation=None):
@@ -68,7 +68,7 @@ class BaseTracker:
         painted_image: numpy array (H, W, 3)
         """
 
-        if first_frame_annotation is not None:   # first frame mask
+        if first_frame_annotation is not None:  # first frame mask
             # initialisation
             mask, labels = self.mapper.convert_mask(first_frame_annotation)
             mask = torch.Tensor(mask).to(self.device)
@@ -79,27 +79,27 @@ class BaseTracker:
         # prepare inputs
         frame_tensor = self.im_transform(frame).to(self.device)
         # track one frame
-        probs, _ = self.tracker.step(frame_tensor, mask, labels)   # logits 2 (bg fg) H W
+        probs, _ = self.tracker.step(frame_tensor, mask, labels)  # logits 2 (bg fg) H W
         # # refine
         # if first_frame_annotation is None:
-        #     out_mask = self.sam_refinement(frame, logits[1], ti)    
+        #     out_mask = self.sam_refinement(frame, logits[1], ti)
 
         # convert to mask
         out_mask = torch.argmax(probs, dim=0)
         out_mask = (out_mask.detach().cpu().numpy()).astype(np.uint8)
 
         final_mask = np.zeros_like(out_mask)
-        
+
         # map back
         for k, v in self.mapper.remappings.items():
             final_mask[out_mask == v] = k
 
         num_objs = final_mask.max()
         painted_image = frame
-        for obj in range(1, num_objs+1):
-            if np.max(final_mask==obj) == 0:
+        for obj in range(1, num_objs + 1):
+            if np.max(final_mask == obj) == 0:
                 continue
-            painted_image = mask_painter(painted_image, (final_mask==obj).astype('uint8'), mask_color=obj+1)
+            painted_image = mask_painter(painted_image, (final_mask == obj).astype('uint8'), mask_color=obj + 1)
 
         # print(f'max memory allocated: {torch.cuda.max_memory_allocated()/(2**20)} MB')
 
@@ -115,8 +115,9 @@ class BaseTracker:
         mode = 'mask'
         logits = logits.unsqueeze(0)
         logits = self.resizer(logits).cpu().numpy()
-        prompts = {'mask_input': logits}    # 1 256 256
-        masks, scores, logits = self.sam_model.predict(prompts, mode, multimask=True)  # masks (n, h, w), scores (n,), logits (n, 256, 256)
+        prompts = {'mask_input': logits}  # 1 256 256
+        masks, scores, logits = self.sam_model.predict(
+            prompts, mode, multimask=True)  # masks (n, h, w), scores (n,), logits (n, 256, 256)
         painted_image = mask_painter(frame, masks[np.argmax(scores)].astype('uint8'), mask_alpha=0.8)
         painted_image = Image.fromarray(painted_image)
         painted_image.save(f'/ssd1/gaomingqi/refine/{ti:05d}.png')
@@ -135,8 +136,7 @@ class BaseTracker:
 #   XMEM_checkpoint = '/ssd1/gaomingqi/checkpoints/XMem-s012.pth'
 ##  2/3) initialise Base Tracker
 #   tracker = BaseTracker(XMEM_checkpoint, device, None, device)    # leave an interface for sam model (currently set None)
-##  3/3) 
-
+##  3/3)
 
 if __name__ == '__main__':
     # video frames (take videos from DAVIS-2017 as examples)
@@ -146,10 +146,10 @@ if __name__ == '__main__':
     frames = []
     for video_path in video_path_list:
         frames.append(np.array(Image.open(video_path).convert('RGB')))
-    frames = np.stack(frames, 0)    # T, H, W, C
+    frames = np.stack(frames, 0)  # T, H, W, C
     # load first frame annotation
     first_frame_path = '/ssd1/gaomingqi/datasets/davis/Annotations/480p/horsejump-high/00000.png'
-    first_frame_annotation = np.array(Image.open(first_frame_path).convert('P'))    # H, W, C
+    first_frame_annotation = np.array(Image.open(first_frame_path).convert('P'))  # H, W, C
 
     # ------------------------------------------------------------------------------------
     # how to use
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     for ti, frame in enumerate(frames):
         if ti == 0:
             mask, prob, painted_frame = tracker.track(frame, first_frame_annotation)
-            # mask: 
+            # mask:
         else:
             mask, prob, painted_frame = tracker.track(frame)
         painted_frames.append(painted_frame)

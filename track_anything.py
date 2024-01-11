@@ -68,9 +68,9 @@ def parse_augment():
     parser.add_argument('--sam_model_type', type=str, default="vit_h")
     parser.add_argument('--port', type=int, default=6080, help="only useful when running gradio applications")
     parser.add_argument('--debug', action="store_true")
-    parser.add_argument('--mask_save', default=True)
+    parser.add_argument('-m', '--mask_save', type=str, default='whole', choices=['whole', 'all'])
     parser.add_argument('-s', '--save_path', required=True, type=str)
-    parser.add_argument('-v','--video_path', required=True, type=str)
+    parser.add_argument('-v', '--video_path', required=True, type=str)
     parser.add_argument('--ckpt_path', default='./checkpoints', type=str)
     args = parser.parse_args()
 
@@ -81,7 +81,7 @@ def parse_augment():
     elif os.path.exists(f"{args.video_path}.MOV"):
         args.video_path = f"{args.video_path}.MOV"
     elif os.path.exists(args.video_path) and (args.video_path.endswith(".mp4") or args.video_path.endswith(".MP4") or
-                                                  args.video_path.endswith(".MOV")):
+                                              args.video_path.endswith(".MOV")):
         args.video_path = f"{args.video_path}"
     else:
         raise ValueError(f'video: {args.video_path}.xxx do not exist!')
