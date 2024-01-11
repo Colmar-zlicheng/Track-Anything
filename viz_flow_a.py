@@ -97,42 +97,22 @@ def viz_save_flow(args):
             alphas = []
 
             if i < args.cache_frame:
-                # for j in range(0, i + 1):
-                for j in range(i, -1, -1):
+                for j in range(0, i + 1):
                     mask_alpha = mask_alpha * (1 - 1 / args.cache_frame)
                     alphas.append(mask_alpha)
-                # for j in range(0, i + 1):
-                for j in range(i, -1, -1):
+                for j in range(0, i + 1):
                     alpha = alphas.pop()
                     draw_contour = True if j == i else False
-                    if j == i:
-                        tmp_mask = masks[n][j].copy()
-                        new_mask = masks[n][j].copy()
-                    else:
-                        new_mask = np.logical_and(masks[n][j], np.logical_not(tmp_mask)).astype('uint8')
-                        tmp_mask = np.logical_or(tmp_mask, masks[n][j]).astype('uint8')
-                    img = add_mask(img, mask=new_mask, mask_color=n + 2, mask_alpha=alpha, draw_contour=draw_contour)
+                    img = add_mask(img, masks[n][j], mask_color=n + 2, mask_alpha=alpha, draw_contour=draw_contour)
 
             else:
-                # for j in range(i - args.cache_frame, i + 1):
-                for j in range(i, i - args.cache_frame - 1, -1):
+                for j in range(i - args.cache_frame, i + 1):
                     mask_alpha = mask_alpha * (1 - 1 / args.cache_frame)
                     alphas.append(mask_alpha)
-                # for j in range(i - args.cache_frame, i + 1):
-                for j in range(i, i - args.cache_frame - 1, -1):
+                for j in range(i - args.cache_frame, i + 1):
                     alpha = alphas.pop()
                     draw_contour = True if j == i else False
-                    if j == i:
-                        tmp_mask = masks[n][j].copy()
-                        new_mask = masks[n][j].copy()
-                    else:
-                        new_mask = np.logical_and(masks[n][j], np.logical_not(tmp_mask)).astype('uint8')
-                        tmp_mask = np.logical_or(tmp_mask, masks[n][j]).astype('uint8')
-                    img = add_mask(img,
-                                   mask=new_mask,
-                                   mask_color=n + 2,
-                                   mask_alpha=mask_alpha,
-                                   draw_contour=draw_contour)
+                    img = add_mask(img, masks[n][j], mask_color=n + 2, mask_alpha=mask_alpha, draw_contour=draw_contour)
 
         cv2.imwrite(os.path.join(args.save_path, f'{i:04}.jpg'), img)
 
@@ -142,7 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--data_path', type=str, required=True)
     parser.add_argument('-s', '--save_path', type=str, default=None)
     parser.add_argument('-f', '--cache_frame', type=int, default=10)
-    parser.add_argument('--mask_alpha', type=float, default=0.9)
+    parser.add_argument('--mask_alpha', type=float, default=0.7)
     arg = parser.parse_args()
 
     if arg.save_path is None:
