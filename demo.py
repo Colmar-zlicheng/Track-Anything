@@ -2,6 +2,7 @@ from metaseg import SegAutoMaskPredictor, SegManualMaskPredictor, SahiAutoSegmen
 
 # For image
 
+
 def automask_image_app(image_path, model_type, points_per_side, points_per_batch, min_area):
     SegAutoMaskPredictor().image_predict(
         source=image_path,
@@ -18,6 +19,7 @@ def automask_image_app(image_path, model_type, points_per_side, points_per_batch
 
 # For video
 
+
 def automask_video_app(video_path, model_type, points_per_side, points_per_batch, min_area):
     SegAutoMaskPredictor().video_predict(
         source=video_path,
@@ -31,6 +33,7 @@ def automask_video_app(video_path, model_type, points_per_side, points_per_batch
 
 
 # For manuel box and point selection
+
 
 def manual_app(image_path, model_type, input_point, input_label, input_box, multimask_output, random_color):
     SegManualMaskPredictor().image_predict(
@@ -49,6 +52,7 @@ def manual_app(image_path, model_type, input_point, input_label, input_box, mult
 
 
 # For sahi sliced prediction
+
 
 def sahi_autoseg_app(
     image_path,
@@ -83,5 +87,5 @@ def sahi_autoseg_app(
         show=False,
         save=True,
     )
-    
+
     return "output.png"
