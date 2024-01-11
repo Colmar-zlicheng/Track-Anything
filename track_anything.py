@@ -71,7 +71,7 @@ def parse_augment():
     parser.add_argument('--mask_save', default=True)
     parser.add_argument('-s', '--save_path', required=True, type=str)
     parser.add_argument('-v','--video_path', required=True, type=str)
-    parser.add_argument('--ckpt_path', default='../checkpoints', type=str)
+    parser.add_argument('--ckpt_path', default='./checkpoints', type=str)
     args = parser.parse_args()
 
     if os.path.exists(f"{args.video_path}.mp4"):

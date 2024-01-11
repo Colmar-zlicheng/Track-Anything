@@ -424,8 +424,8 @@ e2fgvi_checkpoint_id = "10wGdKSUOie0XmCr8SQ2A2FeDe-mfn5w3"
 
 folder = args.ckpt_path
 SAM_checkpoint = download_checkpoint(sam_checkpoint_url, os.path.join(folder, 'SAM'), sam_checkpoint)
-xmem_checkpoint = download_checkpoint(xmem_checkpoint_url, os.path.join(folder, 'XMen'), xmem_checkpoint)
-e2fgvi_checkpoint = download_checkpoint_from_google_drive(e2fgvi_checkpoint_id, os.path.join(folder, 'Track_Anything'),
+xmem_checkpoint = download_checkpoint(xmem_checkpoint_url, os.path.join(folder, 'XMem'), xmem_checkpoint)
+e2fgvi_checkpoint = download_checkpoint_from_google_drive(e2fgvi_checkpoint_id, os.path.join(folder, 'E2FGVI'),
                                                           e2fgvi_checkpoint)
 # args.port = 12212
 # args.device = "cuda:1"
